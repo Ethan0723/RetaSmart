@@ -16,21 +16,21 @@ for file_name in os.listdir(data_folder):
         file_path = os.path.join(data_folder, file_name)
         
         try:
-            # 读取Excel文件，指定引擎为 openpyxl
+            # 读取Excel文件，尝试使用不同的引擎
             data = pd.read_excel(file_path, engine='openpyxl')
         except Exception as e:
-            print(f"Error reading file {file_path}: {e}")
-            continue
+            print(f"Error reading file {file_path} with openpyxl: {e}")
+            try:
+                data = pd.read_excel(file_path, engine='xlrd')
+            except Exception as e:
+                print(f"Error reading file {file_path} with xlrd: {e}")
+                continue
 
         # 在数据中添加新的列，列名为'Channel_code'，值为当前文件名（不包含扩展名）
         data['industry'] = os.path.splitext(file_name)[0]
         
         # 将读取的数据追加到总的DataFrame中
         all_data = pd.concat([all_data, data], ignore_index=True)
-
-industry_list = all_data['industry'].unique()
-df1 = all_data.dropna(subset=['store qty type'])
-type_list = df1['store qty type'].unique()
 
 # 按行业、店铺数量类型、州和城市进行分组，并聚合计算商家数量和店铺数量
 df1 = df1.groupby(['industry', 'store qty type', 'yellow pages state', 'yellow pages city']).agg(
@@ -42,7 +42,6 @@ df1 = df1.groupby(['industry', 'store qty type', 'yellow pages state', 'yellow p
 df1['store qty type'] = df1['store qty type'].astype(str)
 
 city_info = pd.read_excel(r'city_ifno/city.xlsx', engine='openpyxl')
-city_info.head()
 
 df = pd.merge(df1, city_info, how='left', on=['yellow pages city', 'yellow pages state'])
 
