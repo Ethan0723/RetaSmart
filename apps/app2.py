@@ -56,7 +56,7 @@ store_qty_types_sorted.insert(0, 'All')
 app = Dash(__name__)
 
 app.layout = html.Div([
-    html.H1("美国各州商家数量热力图"),
+    html.H1("美国各州店铺数量热力图"),
     html.Div([
         html.Label("选择行业:", style={'margin-right': '10px'}),
         dcc.Dropdown(
