@@ -31,7 +31,7 @@ for file_name in os.listdir(data_folder):
         
         # 将读取的数据追加到总的DataFrame中
         all_data = pd.concat([all_data, data], ignore_index=True)
-
+df1 = all_data.dropna(subset=['store qty type'])
 # 按行业、店铺数量类型、州和城市进行分组，并聚合计算商家数量和店铺数量
 df1 = df1.groupby(['industry', 'store qty type', 'yellow pages state', 'yellow pages city']).agg(
     merchant_qty=('Name', pd.Series.nunique),
