@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: my-app1-service
+    name: RetaSmart - app1-service
     env: python
     plan: free
     buildCommand: ""
@@ -8,7 +8,7 @@ services:
     port: 10000
 
   - type: web
-    name: my-app2-service
+    name: RetaSmart - app1-service
     env: python
     plan: free
     buildCommand: ""
@@ -16,7 +16,7 @@ services:
     port: 10001
 
   - type: web
-    name: my-app3-service
+    name: RetaSmart - app1-service
     env: python
     plan: free
     buildCommand: ""
