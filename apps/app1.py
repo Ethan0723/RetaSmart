@@ -116,4 +116,4 @@ def update_heatmap(selected_industry, selected_store_qty_type):
     return fig
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(host='0.0.0.0', port=10000, debug=False)
