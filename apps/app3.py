@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output
 # 定义数据源文件夹的路径
-data_folder = "../可视化"
+data_folder = "../data"
 
 # 创建一个空的DataFrame用于存储所有的数据
 all_data = pd.DataFrame()
@@ -37,7 +37,7 @@ df1 = df1.groupby(['industry','store qty type','yellow pages state','yellow page
 ).reset_index()
 # 将 'store qty type' 字段转换为文本格式
 df1['store qty type'] = df1['store qty type'].astype(str)
-city_info = pd.read_excel(r'../数据源/city.xlsx')
+city_info = pd.read_excel(r'../city_info/city.xlsx')
 city_info.head()
 df = pd.merge(df1,city_info,how='left',on=['yellow pages city','yellow pages state'])
 # 获取唯一的行业和店铺数量类型列表
