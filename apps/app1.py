@@ -1,8 +1,9 @@
 import pandas as pd
-import os 
+import os
 import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output
+
 # 定义数据源文件夹的路径
 data_folder = "data"
 
@@ -15,8 +16,8 @@ for file_name in os.listdir(data_folder):
         file_path = os.path.join(data_folder, file_name)
         
         try:
-            # 读取Excel文件
-            data = pd.read_excel(file_path)
+            # 读取Excel文件，指定引擎为 openpyxl
+            data = pd.read_excel(file_path, engine='openpyxl')
         except Exception as e:
             print(f"Error reading file {file_path}: {e}")
             continue
@@ -26,21 +27,25 @@ for file_name in os.listdir(data_folder):
         
         # 将读取的数据追加到总的DataFrame中
         all_data = pd.concat([all_data, data], ignore_index=True)
+
 industry_list = all_data['industry'].unique()
 df1 = all_data.dropna(subset=['store qty type'])
 type_list = df1['store qty type'].unique()
-type_list
+
 # 按行业、店铺数量类型、州和城市进行分组，并聚合计算商家数量和店铺数量
-df1 = df1.groupby(['industry','store qty type','yellow pages state','yellow pages city']).agg(
-    merchant_qty = ('Name',pd.Series.nunique),
-    store_qty = ('Address','count')
+df1 = df1.groupby(['industry', 'store qty type', 'yellow pages state', 'yellow pages city']).agg(
+    merchant_qty=('Name', pd.Series.nunique),
+    store_qty=('Address', 'count')
 ).reset_index()
+
 # 将 'store qty type' 字段转换为文本格式
 df1['store qty type'] = df1['store qty type'].astype(str)
 
-city_info = pd.read_excel(r'city_info/city.xlsx')
+city_info = pd.read_excel(r'city_ifno/city.xlsx', engine='openpyxl')
 city_info.head()
-df = pd.merge(df1,city_info,how='left',on=['yellow pages city','yellow pages state'])
+
+df = pd.merge(df1, city_info, how='left', on=['yellow pages city', 'yellow pages state'])
+
 # 获取唯一的行业和店铺数量类型列表
 industries = df['industry'].unique()
 store_qty_types = df['store qty type'].unique()
@@ -88,7 +93,6 @@ def update_heatmap(selected_industry, selected_store_qty_type):
 
     # 聚合数据，计算每个州的商家数量和店铺数量
     grouped_df = filtered_df.groupby(['yellow pages state']).agg({
-        # 'merchant_qty': 'sum',
         'store_qty': 'sum'
     }).reset_index()
 
