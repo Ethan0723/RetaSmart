@@ -31,7 +31,9 @@ for file_name in os.listdir(data_folder):
         
         # 将读取的数据追加到总的DataFrame中
         all_data = pd.concat([all_data, data], ignore_index=True)
+
 df1 = all_data.dropna(subset=['store qty type'])
+
 # 按行业、店铺数量类型、州和城市进行分组，并聚合计算商家数量和店铺数量
 df1 = df1.groupby(['industry', 'store qty type', 'yellow pages state', 'yellow pages city']).agg(
     merchant_qty=('Name', pd.Series.nunique),
@@ -44,11 +46,15 @@ df1['store qty type'] = df1['store qty type'].astype(str)
 city_info = pd.read_excel(r'city_ifno/city.xlsx', engine='openpyxl')
 
 df = pd.merge(df1, city_info, how='left', on=['yellow pages city', 'yellow pages state'])
+
 # 获取唯一的行业和店铺数量类型列表
 industries = df['industry'].unique()
 store_qty_types = df['store qty type'].unique()
 
-# 对店铺数量类型进行排序，并添加 "All" 选项
+# 对行业和店铺数量类型进行排序，并添加 "All" 选项
+industries_sorted = sorted(industries)
+industries_sorted.insert(0, 'All')
+
 store_qty_types_sorted = sorted(store_qty_types, key=lambda x: (int(x.split('~')[0]) if '~' in x else (int(x[:-1]) if x.endswith('+') else int(x))))
 store_qty_types_sorted.insert(0, 'All')
 
@@ -61,8 +67,8 @@ app.layout = html.Div([
         html.Label("选择行业:", style={'margin-right': '10px'}),
         dcc.Dropdown(
             id='industry-dropdown',
-            options=[{'label': industry, 'value': industry} for industry in industries],
-            value=industries[0],
+            options=[{'label': industry, 'value': industry} for industry in industries_sorted],
+            value='All',
             style={'width': '200px'}
         ),
         html.Label("选择店铺数量类型:", style={'margin-left': '20px', 'margin-right': '10px'}),
@@ -83,11 +89,13 @@ app.layout = html.Div([
 )
 def update_heatmap(selected_industry, selected_store_qty_type):
     # 筛选数据
-    if selected_store_qty_type == 'All':
-        filtered_df = df[df['industry'] == selected_industry]
-    else:
-        filtered_df = df[(df['industry'] == selected_industry) & 
-                         (df['store qty type'] == selected_store_qty_type)]
+    filtered_df = df.copy()
+    
+    if selected_industry != 'All':
+        filtered_df = filtered_df[filtered_df['industry'] == selected_industry]
+    
+    if selected_store_qty_type != 'All':
+        filtered_df = filtered_df[filtered_df['store qty type'] == selected_store_qty_type]
 
     # 聚合数据，计算每个州的商家数量和店铺数量
     grouped_df = filtered_df.groupby(['yellow pages state']).agg({
@@ -129,7 +137,6 @@ def update_heatmap(selected_industry, selected_store_qty_type):
         textposition="bottom center",
         hovertemplate='<b>%{text}</b><extra></extra>',  # 自定义提示模板
         showlegend=False  # 禁用图例
-        # hoverinfo='none'  # 禁用悬停提示
     ))
 
     # 更新布局
