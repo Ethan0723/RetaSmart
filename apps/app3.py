@@ -53,7 +53,10 @@ states = df['yellow pages state'].unique()
 store_qty_types_sorted = sorted(store_qty_types, key=lambda x: (int(x.split('~')[0]) if '~' in x else (int(x[:-1]) if x.endswith('+') else int(x))))
 store_qty_types_sorted.insert(0, 'All')
 
-# 添加 "All" 选项到州的列表中
+# 添加 "All" 选项到行业和州的列表中
+industries_sorted = sorted(industries)
+industries_sorted.insert(0, 'All')
+
 states_sorted = sorted(states)
 states_sorted.insert(0, 'All')
 
