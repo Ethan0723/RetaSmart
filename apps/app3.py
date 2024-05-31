@@ -69,8 +69,8 @@ app.layout = html.Div([
         html.Label("选择行业:", style={'margin-right': '10px'}),
         dcc.Dropdown(
             id='industry-dropdown',
-            options=[{'label': industry, 'value': industry} for industry in industries],
-            value=industries[0],
+            options=[{'label': industry, 'value': industry} for industry in industries_sorted],
+            value='All',
             style={'width': '200px'}
         ),
         html.Label("选择店铺数量类型:", style={'margin-left': '20px', 'margin-right': '10px'}),
@@ -99,7 +99,10 @@ app.layout = html.Div([
 )
 def update_heatmap(selected_industry, selected_store_qty_type, selected_state):
     # 筛选数据
-    filtered_df = df[df['industry'] == selected_industry]
+    filtered_df = df.copy()
+    
+    if selected_industry != 'All':
+        filtered_df = filtered_df[filtered_df['industry'] == selected_industry]
     
     if selected_store_qty_type != 'All':
         filtered_df = filtered_df[filtered_df['store qty type'] == selected_store_qty_type]
@@ -155,6 +158,7 @@ def update_heatmap(selected_industry, selected_store_qty_type, selected_state):
     )
 
     return fig
+
 
 if __name__ == '__main__':
     app.run_server(host='0.0.0.0', port=10002, debug=False)
