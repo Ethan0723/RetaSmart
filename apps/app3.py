@@ -47,10 +47,15 @@ df = pd.merge(df1, city_info, how='left', on=['yellow pages city', 'yellow pages
 # 获取唯一的行业和店铺数量类型列表
 industries = df['industry'].unique()
 store_qty_types = df['store qty type'].unique()
+states = df['yellow pages state'].unique()
 
 # 对店铺数量类型进行排序，并添加 "All" 选项
 store_qty_types_sorted = sorted(store_qty_types, key=lambda x: (int(x.split('~')[0]) if '~' in x else (int(x[:-1]) if x.endswith('+') else int(x))))
 store_qty_types_sorted.insert(0, 'All')
+
+# 添加 "All" 选项到州的列表中
+states_sorted = sorted(states)
+states_sorted.insert(0, 'All')
 
 # 创建 Dash 应用程序
 app = Dash(__name__)
@@ -71,6 +76,13 @@ app.layout = html.Div([
             options=[{'label': qty_type, 'value': qty_type} for qty_type in store_qty_types_sorted],
             value='All',
             style={'width': '200px'}
+        ),
+        html.Label("选择州:", style={'margin-left': '20px', 'margin-right': '10px'}),
+        dcc.Dropdown(
+            id='state-dropdown',
+            options=[{'label': state, 'value': state} for state in states_sorted],
+            value='All',
+            style={'width': '200px'}
         )
     ], style={'display': 'flex', 'align-items': 'center'}),
     dcc.Graph(id='heatmap', style={'height': '80vh'})  # 调整图表高度
@@ -79,15 +91,25 @@ app.layout = html.Div([
 @app.callback(
     Output('heatmap', 'figure'),
     [Input('industry-dropdown', 'value'),
-     Input('store-qty-type-dropdown', 'value')]
+     Input('store-qty-type-dropdown', 'value'),
+     Input('state-dropdown', 'value')]
 )
-def update_heatmap(selected_industry, selected_store_qty_type):
+def update_heatmap(selected_industry, selected_store_qty_type, selected_state):
     # 筛选数据
-    if selected_store_qty_type == 'All':
-        filtered_df = df[df['industry'] == selected_industry]
-    else:
-        filtered_df = df[(df['industry'] == selected_industry) & 
-                         (df['store qty type'] == selected_store_qty_type)]
+    filtered_df = df[df['industry'] == selected_industry]
+    
+    if selected_store_qty_type != 'All':
+        filtered_df = filtered_df[filtered_df['store qty type'] == selected_store_qty_type]
+    
+    if selected_state != 'All':
+        filtered_df = filtered_df[filtered_df['yellow pages state'] == selected_state]
+
+    # 确保 latitude 和 longitude 列是数值类型
+    filtered_df.loc[:, 'latitude'] = pd.to_numeric(filtered_df['latitude'], errors='coerce')
+    filtered_df.loc[:, 'longitude'] = pd.to_numeric(filtered_df['longitude'], errors='coerce')
+
+    # 过滤掉无效的数值
+    filtered_df = filtered_df.dropna(subset=['latitude', 'longitude'])
 
     # 创建地图图层
     fig = px.choropleth_mapbox(filtered_df, 
