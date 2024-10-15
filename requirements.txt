@@ -3,3 +3,4 @@ plotly
 dash
 openpyxl
 xlrd
+gunicorn
