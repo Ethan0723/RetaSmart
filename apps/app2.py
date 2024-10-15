@@ -153,4 +153,5 @@ def update_heatmap(selected_industry, selected_store_qty_type):
     return fig
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=10001, debug=False)
+    port = int(os.environ.get("PORT", 10001))  # 使用环境变量的端口，若未定义则使用10001
+    app.run_server(host='0.0.0.0', port=port, debug=False)
